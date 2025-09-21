@@ -14,6 +14,10 @@ import {
   Shield,
   RotateCcw
 } from "lucide-react";
+import visaLogo from "@/assets/logos/visa-logo.png";
+import mastercardLogo from "@/assets/logos/mastercard-logo.png";
+import amexLogo from "@/assets/logos/amex-logo.png";
+import paypalLogo from "@/assets/logos/paypal-logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -196,17 +200,13 @@ const Footer = () => {
           </div>
 
           {/* Payment Methods */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground mr-2">We accept:</span>
-            <div className="flex space-x-1">
-              {["Visa", "MC", "AMEX", "PayPal"].map((method) => (
-                <div
-                  key={method}
-                  className="px-2 py-1 bg-muted rounded text-xs font-medium"
-                >
-                  {method}
-                </div>
-              ))}
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-muted-foreground">We accept:</span>
+            <div className="flex items-center space-x-3">
+              <img src={visaLogo} alt="Visa" className="h-6 w-auto bg-white rounded px-1" />
+              <img src={mastercardLogo} alt="Mastercard" className="h-6 w-auto bg-white rounded px-1" />
+              <img src={amexLogo} alt="American Express" className="h-6 w-auto bg-white rounded px-1" />
+              <img src={paypalLogo} alt="PayPal" className="h-6 w-auto bg-white rounded px-1" />
             </div>
           </div>
         </div>

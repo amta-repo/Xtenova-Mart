@@ -13,7 +13,7 @@ interface ProductCardProps {
   reviewCount: number;
   isNew?: boolean;
   isOnSale?: boolean;
-  stockLevel?: "high" | "low" | "out";
+  stockLevel?: "high" | "medium" | "low" | "out";
   stockCount?: number;
 }
 
@@ -31,7 +31,7 @@ const ProductCard = ({
   stockCount,
 }: ProductCardProps) => {
   const isInStock = stockLevel !== "out";
-  const isLowStock = stockLevel === "low";
+  const isLowStock = stockLevel === "low" || stockLevel === "medium";
 
   return (
     <Card className="product-card group overflow-hidden">

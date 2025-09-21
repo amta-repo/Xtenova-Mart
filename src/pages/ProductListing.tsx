@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Filter, SlidersHorizontal, Grid3X3, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,45 +12,264 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 
-// Mock products data
-const products = [
-  {
-    id: "1",
-    name: "Wireless Bluetooth Headphones",
-    price: 129.99,
-    originalPrice: 179.99,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-    rating: 4.8,
-    reviewCount: 324,
-    isOnSale: true,
-    stockLevel: "high" as const,
-    category: "Electronics",
-    brand: "TechPro",
+// Mock products data by category
+const allProducts = {
+  clothing: [
+    {
+      id: "c1",
+      name: "Premium Cotton T-Shirt",
+      price: 29.99,
+      originalPrice: 39.99,
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviewCount: 234,
+      isOnSale: true,
+      stockLevel: "high" as const,
+      category: "Clothing",
+      brand: "StyleCo",
+    },
+    {
+      id: "c2",
+      name: "Elegant Summer Dress",
+      price: 79.99,
+      image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop",
+      rating: 4.9,
+      reviewCount: 187,
+      isNew: true,
+      stockLevel: "medium" as const,
+      category: "Clothing",
+      brand: "FashionForward",
+    },
+    {
+      id: "c3",
+      name: "Classic Denim Jacket",
+      price: 89.99,
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviewCount: 156,
+      stockLevel: "high" as const,
+      category: "Clothing",
+      brand: "StyleCo",
+    },
+    {
+      id: "c4",
+      name: "Formal Business Suit",
+      price: 299.99,
+      originalPrice: 399.99,
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviewCount: 92,
+      isOnSale: true,
+      stockLevel: "low" as const,
+      stockCount: 5,
+      category: "Clothing",
+      brand: "FashionForward",
+    },
+  ],
+  shoes: [
+    {
+      id: "s1",
+      name: "Athletic Running Shoes",
+      price: 129.99,
+      originalPrice: 159.99,
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviewCount: 412,
+      isOnSale: true,
+      stockLevel: "high" as const,
+      category: "Shoes",
+      brand: "SportMax",
+    },
+    {
+      id: "s2",
+      name: "Elegant High Heels",
+      price: 89.99,
+      image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviewCount: 167,
+      stockLevel: "medium" as const,
+      category: "Shoes",
+      brand: "GlamStyle",
+    },
+    {
+      id: "s3",
+      name: "Casual Sneakers",
+      price: 79.99,
+      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviewCount: 298,
+      isNew: true,
+      stockLevel: "high" as const,
+      category: "Shoes",
+      brand: "ComfortWalk",
+    },
+    {
+      id: "s4",
+      name: "Formal Leather Boots",
+      price: 179.99,
+      image: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviewCount: 134,
+      stockLevel: "medium" as const,
+      category: "Shoes",
+      brand: "LeatherCraft",
+    },
+  ],
+  gadgets: [
+    {
+      id: "g1",
+      name: "Wireless Bluetooth Headphones",
+      price: 129.99,
+      originalPrice: 179.99,
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviewCount: 324,
+      isOnSale: true,
+      stockLevel: "high" as const,
+      category: "Gadgets",
+      brand: "TechPro",
+    },
+    {
+      id: "g2",
+      name: "Smart Fitness Watch",
+      price: 199.99,
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
+      rating: 4.9,
+      reviewCount: 567,
+      isNew: true,
+      stockLevel: "medium" as const,
+      category: "Gadgets",
+      brand: "FitTech",
+    },
+    {
+      id: "g3",
+      name: "Portable Phone Charger",
+      price: 39.99,
+      originalPrice: 49.99,
+      image: "https://images.unsplash.com/photo-1609592992071-8942600a8f88?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviewCount: 189,
+      isOnSale: true,
+      stockLevel: "high" as const,
+      category: "Gadgets",
+      brand: "PowerMax",
+    },
+    {
+      id: "g4",
+      name: "Wireless Gaming Mouse",
+      price: 79.99,
+      image: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviewCount: 245,
+      stockLevel: "high" as const,
+      category: "Gadgets",
+      brand: "GameTech",
+    },
+  ],
+  cosmetics: [
+    {
+      id: "co1",
+      name: "Premium Skincare Set",
+      price: 89.99,
+      image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+      rating: 4.9,
+      reviewCount: 156,
+      isNew: true,
+      stockLevel: "low" as const,
+      stockCount: 3,
+      category: "Cosmetics",
+      brand: "GlowBeauty",
+    },
+    {
+      id: "co2",
+      name: "Luxury Lipstick Collection",
+      price: 49.99,
+      originalPrice: 69.99,
+      image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviewCount: 234,
+      isOnSale: true,
+      stockLevel: "medium" as const,
+      category: "Cosmetics",
+      brand: "LuxeBeauty",
+    },
+    {
+      id: "co3",
+      name: "Professional Makeup Brush Set",
+      price: 39.99,
+      image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviewCount: 187,
+      stockLevel: "high" as const,
+      category: "Cosmetics",
+      brand: "ProMakeup",
+    },
+    {
+      id: "co4",
+      name: "Anti-Aging Serum",
+      price: 79.99,
+      image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
+      rating: 4.9,
+      reviewCount: 298,
+      isNew: true,
+      stockLevel: "medium" as const,
+      category: "Cosmetics",
+      brand: "SkinCare+",
+    },
+  ],
+};
+
+const categoryInfo = {
+  clothing: {
+    title: "Clothing Collection",
+    description: "Discover our premium fashion collection for every occasion",
   },
-  {
-    id: "2",
-    name: "Premium Skincare Set",
-    price: 89.99,
-    image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
-    rating: 4.9,
-    reviewCount: 156,
-    isNew: true,
-    stockLevel: "low" as const,
-    stockCount: 3,
-    category: "Beauty",
-    brand: "GlowBeauty",
+  shoes: {
+    title: "Footwear Collection", 
+    description: "Step out in style with our curated shoe collection",
   },
-  // Add more products...
-];
+  gadgets: {
+    title: "Tech & Gadgets",
+    description: "Latest technology and innovative gadgets for modern life",
+  },
+  cosmetics: {
+    title: "Beauty & Cosmetics",
+    description: "Premium beauty products for your skincare and makeup needs",
+  },
+  sale: {
+    title: "Sale Items",
+    description: "Amazing deals and discounts on your favorite products",
+  },
+};
 
 const ProductListing = () => {
+  const { category } = useParams();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 
-  const categories = ["Electronics", "Beauty", "Fashion", "Shoes", "Gadgets"];
-  const brands = ["TechPro", "GlowBeauty", "StyleCo", "FashionForward", "TechNova"];
+  // Get products based on category
+  const getProducts = () => {
+    if (category === "sale") {
+      // Return sale items from all categories
+      return Object.values(allProducts).flat().filter(product => product.isOnSale);
+    }
+    if (category && allProducts[category as keyof typeof allProducts]) {
+      return allProducts[category as keyof typeof allProducts];
+    }
+    // Return all products if no category or invalid category
+    return Object.values(allProducts).flat();
+  };
+
+  const products = getProducts();
+  const currentCategoryInfo = categoryInfo[category as keyof typeof categoryInfo] || {
+    title: "All Products",
+    description: "Discover our complete collection",
+  };
+
+  const categories = ["Clothing", "Beauty", "Shoes", "Gadgets"];
+  const brands = ["TechPro", "GlowBeauty", "StyleCo", "FashionForward", "SportMax", "FitTech", "PowerMax", "GameTech", "LuxeBeauty", "ProMakeup", "SkinCare+", "GlamStyle", "ComfortWalk", "LeatherCraft"];
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     setSelectedCategories(prev => 
@@ -169,14 +389,14 @@ const ProductListing = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-muted-foreground mb-6">
-          <span>Home</span> / <span>Products</span>
+          <span>Home</span> / <span>{category ? category.charAt(0).toUpperCase() + category.slice(1) : "Products"}</span>
         </nav>
 
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">All Products</h1>
-            <p className="text-muted-foreground">Discover our complete collection</p>
+            <h1 className="text-3xl font-bold mb-2">{currentCategoryInfo.title}</h1>
+            <p className="text-muted-foreground">{currentCategoryInfo.description}</p>
           </div>
           
           <div className="flex items-center gap-4 mt-4 md:mt-0">
@@ -258,7 +478,7 @@ const ProductListing = () => {
           {/* Products Grid */}
           <div className="flex-1">
             <div className="mb-4 text-sm text-muted-foreground">
-              Showing 1-12 of 156 products
+              Showing 1-{products.length} of {products.length} products
             </div>
             
             <div className={`grid gap-6 ${
