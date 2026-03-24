@@ -21,11 +21,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.lang = lang;
   }, []);
 
-  const t = useCallback((key: TranslationKey, vars?: Record<string, string | number>) => {
-    let text = translations[key]?.[language] || translations[key]?.["en"] || key;
+  const t = useCallback((key: TranslationKey, vars?: Record<string, string | number>): string => {
+    const entry = translations[key];
+    let text: string = entry?.[language] ?? entry?.["en"] ?? key;
     if (vars) {
       Object.entries(vars).forEach(([k, v]) => {
-        text = text.replace(`{${k}}`, String(v));
+        text = text.split(`{${k}}`).join(String(v));
       });
     }
     return text;
