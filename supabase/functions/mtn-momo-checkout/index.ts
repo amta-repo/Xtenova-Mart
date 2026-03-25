@@ -34,8 +34,11 @@ const mapPaymentStatus = (status?: string) => {
   if (["FAILED", "REJECTED", "TIMEOUT", "EXPIRED"].includes(normalized)) return "failed";
   return "pending";
 };
+const getAnonKey = () => {
+  return Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || (() => { throw new Error("No anon/publishable key configured"); })();
+};
 const createClients = (authHeader: string) => {
-  const authClient = createClient(getEnv("SUPABASE_URL"), getEnv("SUPABASE_PUBLISHABLE_KEY"), { global: { headers: { Authorization: authHeader } } });
+  const authClient = createClient(getEnv("SUPABASE_URL"), getAnonKey(), { global: { headers: { Authorization: authHeader } } });
   const serviceClient = createClient(getEnv("SUPABASE_URL"), getEnv("SUPABASE_SERVICE_ROLE_KEY"));
   return { authClient, serviceClient };
 };
