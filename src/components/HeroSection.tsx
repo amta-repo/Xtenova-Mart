@@ -17,12 +17,12 @@ const HeroSection = () => {
 
       <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/20">
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
             {t("hero.title_line1")}
             <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{storeName}</span>
           </h1>
 
-          <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
             {t("hero.subtitle")}
           </p>
 
