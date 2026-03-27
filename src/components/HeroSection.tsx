@@ -22,7 +22,7 @@ const HeroSection = () => {
             <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{storeName}</span>
           </h1>
 
-          <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
             {t("hero.subtitle")}
           </p>
 
