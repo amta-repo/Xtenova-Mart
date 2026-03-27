@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { CheckCircle, Clock3, AlertCircle, CreditCard } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,11 +16,20 @@ import mastercardLogo from "@/assets/logos/mastercard-logo.png";
 import { formatPrice, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, STORE_COUNTRY, STORE_CURRENCY } from "@/lib/currency";
 import { useLanguage } from "@/i18n/LanguageContext";
 
+declare global {
+  interface Window {
+    openKkiapayWidget: (config: Record<string, unknown>) => void;
+    addKkiapayListener: (event: string, cb: (data: unknown) => void) => void;
+    removeKkiapayListener: (event: string, cb: (data: unknown) => void) => void;
+  }
+}
+
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "", address: "", city: "", zip: "",
@@ -53,46 +62,85 @@ const Checkout = () => {
 
   const handlePlaceOrder = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!form.name || !form.address || !form.city || !form.zip) {
+      toast({ title: t("checkout.payment_error_title"), description: "Please fill all shipping fields.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("fedapay-checkout", {
-        body: {
-          shippingName: form.name,
-          shippingAddress: form.address,
-          shippingCity: form.city,
-          shippingZip: form.zip,
-          shippingCountry: form.country,
-          customerPhone: form.phone,
-          customerEmail: form.email || user.email,
-        },
+      // 1. Create order in DB
+      const { data: order, error: orderError } = await supabase.from("orders").insert({
+        user_id: user.id,
+        total,
+        shipping_name: form.name,
+        shipping_address: form.address,
+        shipping_city: form.city,
+        shipping_zip: form.zip,
+        shipping_country: form.country,
+        payment_method: "kkiapay",
+        payment_status: "pending",
+        payment_currency: STORE_CURRENCY,
+        payer_phone: form.phone || null,
+      }).select().single();
+
+      if (orderError || !order) throw new Error(orderError?.message || "Failed to create order");
+
+      // 2. Insert order items
+      const orderItems = items.map((i) => ({
+        order_id: order.id,
+        product_id: i.product_id,
+        product_name: i.product_name,
+        product_image: i.product_image,
+        price: i.product_price,
+        quantity: i.quantity,
+      }));
+      await supabase.from("order_items").insert(orderItems);
+
+      // 3. Open Kkiapay widget
+      const onSuccess = async (data: any) => {
+        try {
+          // Update order with payment reference and mark paid
+          await supabase.from("orders").update({
+            payment_status: "successful",
+            status: "paid",
+            payment_reference: data?.transactionId || String(data?.transactionId ?? ""),
+          }).eq("id", order.id);
+
+          await clearCart();
+          window.removeKkiapayListener("success", onSuccess);
+          window.removeKkiapayListener("failed", onFailed);
+          navigate("/success");
+        } catch (err) {
+          console.error("Post-payment update failed:", err);
+          navigate("/success");
+        }
+      };
+
+      const onFailed = () => {
+        toast({
+          title: t("checkout.payment_cancelled_title"),
+          description: t("checkout.payment_cancelled_desc"),
+          variant: "destructive",
+        });
+        window.removeKkiapayListener("success", onSuccess);
+        window.removeKkiapayListener("failed", onFailed);
+        setLoading(false);
+      };
+
+      window.addKkiapayListener("success", onSuccess);
+      window.addKkiapayListener("failed", onFailed);
+
+      window.openKkiapayWidget({
+        amount: total,
+        position: "center",
+        callback: "",
+        data: "",
+        theme: "#F5520F",
+        key: import.meta.env.VITE_KKIAPAY_PUBLIC_KEY,
+        sandbox: true,
       });
 
-      if (error || !data) {
-        toast({
-          title: t("checkout.payment_error_title"),
-          description: error?.message || data?.error || t("checkout.payment_error_desc"),
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (data.paymentUrl) {
-        await clearCart();
-        toast({
-          title: t("checkout.redirecting_title"),
-          description: t("checkout.redirecting_desc"),
-        });
-        window.location.href = data.paymentUrl;
-      } else {
-        toast({
-          title: t("checkout.payment_error_title"),
-          description: t("checkout.no_payment_url"),
-          variant: "destructive",
-        });
-        setLoading(false);
-      }
     } catch (err) {
       toast({
         title: t("checkout.payment_error_title"),
@@ -129,11 +177,11 @@ const Checkout = () => {
             <div className="bg-card rounded-lg border p-5 sm:p-6 space-y-4">
               <div>
                 <h2 className="text-lg sm:text-xl font-bold">{t("checkout.payment_method")}</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("checkout.fedapay_desc")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("checkout.kkiapay_desc")}</p>
               </div>
               <div className="rounded-2xl border bg-secondary/30 p-4 flex flex-wrap items-center gap-3">
                 <div className="inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs sm:text-sm font-medium text-primary-foreground">
-                  <CreditCard className="mr-2 h-4 w-4" />FedaPay
+                  <CreditCard className="mr-2 h-4 w-4" />Kkiapay
                 </div>
                 <span className="text-xs text-muted-foreground">MTN MoMo</span>
                 <span className="text-xs text-muted-foreground">Moov Money</span>
