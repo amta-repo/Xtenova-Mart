@@ -6,7 +6,6 @@ import visaLogo from "@/assets/logos/visa-logo.png";
 import mastercardLogo from "@/assets/logos/mastercard-logo.png";
 import amexLogo from "@/assets/logos/amex-logo.png";
 import paypalLogo from "@/assets/logos/paypal-logo.png";
-import xtenovaLogo from "@/assets/logos/xtenova-logo.png";
 import { Link } from "react-router-dom";
 import { categoryCards, storeEmail, storeLocation, storeName, storePhone } from "@/data/catalog";
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "@/lib/currency";
@@ -35,8 +34,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <img src={xtenovaLogo} alt="Xtenova Mart" className="w-8 h-8 rounded-full object-cover" width={32} height={32} />
-              <span className="text-lg sm:text-xl font-bold">{storeName}</span>
+              <span className="text-lg sm:text-xl font-bold text-primary">{storeName}</span>
             </div>
             <p className="text-muted-foreground text-sm mb-4">{t("footer.description")}</p>
             <div className="flex space-x-2">
