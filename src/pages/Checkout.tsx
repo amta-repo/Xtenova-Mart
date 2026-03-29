@@ -129,7 +129,7 @@ const Checkout = () => {
         callback: "",
         data: "",
         theme: "#F5520F",
-        key: import.meta.env.VITE_KKIAPAY_PUBLIC_KEY,
+        key: "tsk_5cbeece12a2c11f19eb33f9304780be2",
         sandbox: true,
       });
 
